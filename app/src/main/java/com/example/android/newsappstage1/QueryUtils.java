@@ -1,6 +1,8 @@
 package com.example.android.newsappstage1;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,6 +19,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -54,11 +57,25 @@ public class QueryUtils {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
+        // If there is a number error return newsList with the error number in Headline object.
+        if(isNumeric(jsonResponse)){
+            ArrayList<News> newsList = new ArrayList<>();
+            News newsObj = new News(jsonResponse, null, null, null, null, null, null );
+            // Add the new {@link News} to the list of newsList.
+            newsList.add(newsObj);
+            return newsList;
+        }
+
+
         // Ready to extract relevant fields from the JSON response API and create a list of {@link News}
         List<News> newsList = extractNews(jsonResponse);
 
         // Return the list of news
         return newsList;
+    }
+
+    private static boolean isNumeric(String s) {
+        return s != null && s.matches("[-+]?\\d*\\.?\\d+");
     }
 
     /**
@@ -88,6 +105,8 @@ public class QueryUtils {
                 jsonResponse = readFromStream(inputStream);
             } else {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
+                //Return response code with number erro
+                return String.valueOf(urlConnection.getResponseCode());
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Problem retrieving the news JSON results.", e);
@@ -99,6 +118,7 @@ public class QueryUtils {
                 inputStream.close();
             }
         }
+
         return jsonResponse;
     }
 
